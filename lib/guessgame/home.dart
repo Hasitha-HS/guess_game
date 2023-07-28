@@ -1,35 +1,16 @@
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:http/http.dart' as http;
-import 'model.dart';
 
 TextEditingController _controller = TextEditingController();
 
 class homeguess extends StatefulWidget {
-  homeguess({super.key});
+  const homeguess({super.key});
 
   @override
   State<homeguess> createState() => _homeguessState();
 }
 
 class _homeguessState extends State<homeguess> {
-  // List<model>? _list = [];
-  // String text;
-  // static String getnum = '/productsById/102';
-  model? _model;
-
-  static String baseurl = 'http://192.168.43.83:8080';
-  static String getnum = '/check/';
-  static String getprodlist = "/products";
-
-  @override
-  void initState() {
-    super.initState();
-    // _fetchdatalist();
-    _fetchdata();
-  }
+  // @override
 
   @override
   void dispose() {
@@ -37,21 +18,11 @@ class _homeguessState extends State<homeguess> {
     super.dispose();
   }
 
-  void _fetchdata() async {
-    _model = (await ApiService().fetchdata())!;
-    // _list = (await ApiService().fetchdatalist())!;
-    Future.delayed(const Duration(seconds: 1)).then((value) => setState(() {}));
-  }
 
-  // void _fetchdatalist() async {
-  //   // _model = (await ApiService().fetchdata())!;
-  //   _list = (await ApiService().fetchdata())! as List<model>?;
-  //   Future.delayed(const Duration(seconds: 1)).then((value)=>setState(() {}));
-  // }
-
+  int chances = 0;
   @override
   Widget build(BuildContext context) {
-    // String val = '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Guess Game'),
@@ -79,25 +50,25 @@ class _homeguessState extends State<homeguess> {
               height: 80,
             ),
             ElevatedButton(
-                onPressed: () async {
-                  print(_homeguessState.baseurl + _homeguessState.getnum);
-                  http.Response response = await http.get(Uri.parse(
-                      _homeguessState.baseurl +
-                          _homeguessState.getnum +
-                          _controller.text.toString()));
-                  print(response.body);
-                  if (response.body == true || response.body == "true") {
-                    // print(_controller.text);
-                    // print(_model?.name);
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => rightguess()));
-                  } else {
-                    // print(_controller.text);
-                    // print(_model?.name);
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const wrongguess()));
+                onPressed: (){
+                  chances++;
+                  if (chances <= 3){
+                    if (_controller.text.toString() == '7') {
+
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) =>rightguess()));
+                    } else {
+                      // print(_controller.text);
+                      // print(_model?.name);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const wrongguess()));
+                    }
+                  }
+                  else{
+                    chances=0;
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const outofguess()));
                   }
                 },
                 child: const Text('submit'))
@@ -136,142 +107,58 @@ class wrongguess extends StatelessWidget {
   }
 }
 
-String _getData = '';
-String _getDatafull = '';
-
-class rightguess extends StatefulWidget {
-  const rightguess({super.key});
-
-  @override
-  State<rightguess> createState() => _rightguessState();
-}
-
-class _rightguessState extends State<rightguess> {
-  Future<String> getdata() async {
-    print(_homeguessState.baseurl + _homeguessState.getprodlist);
-    var url = Uri.parse(_homeguessState.baseurl + _homeguessState.getprodlist);
-    http.Response response = await http.get(url);
-    print(response.body);
-    setState(() {
-      _getDatafull=response.body;
-      // _getData = jsonDecode(response.body)[0]["name"].toString();
-    });
-setState(() {
-  _getData="";
-});
-    for(var res in jsonDecode(response.body) ){
-      setState(() {
-        _getData+="\n ${res["id"]} - ${res["name"]}";
-      });
-    }
-
-    //for eeach
-
-    return jsonDecode(response.body);
-  }
-
-  @override
-  void initState() {;
-    getdata();
-    super.initState();
-  }
-
+class rightguess extends StatelessWidget {
+   rightguess({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-          alignment: Alignment.center, child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+    return const Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(30.0),
+          child: Column(
             children: [
-              Text( _getDatafull),
-              SizedBox(height: 50,),
-              Text( _getData),
+              Icon(
+                Icons.thumb_up_alt_outlined,
+                color: Colors.green,
+                size: 300,
+              ),
+              Text(
+                'Your Guess Is Right',
+                style: TextStyle(fontSize: 20),
+              )
             ],
-          )),
-      // body: Center(
-      //   child: Padding(
-      //     padding: EdgeInsets.all(30.0),
-      //     child: Column(
-      //       children: [
-      //         Icon(
-      //           Icons.thumb_up_alt_outlined,
-      //           color: Colors.green,
-      //           size: 300,
-      //         ),
-      //         Text(
-      //           'Your Guess Is Right',
-      //           style: TextStyle(fontSize: 20),
-      //         )
-      //       ],
-      //     ),
-      //   ),
-      // ),
+          ),
+        ),
+      ),
     );
   }
 }
 
-//
-// class rightguess extends StatelessWidget {
-//    rightguess({super.key});
-//
-//
-// Future<String> getdata() async{
-//   var url = Uri.parse(_homeguessState.baseurl + _homeguessState.getprodlist);
-//   http.Response response = await http.get(url);
-//
-//   return response.body.toString();
-// }
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Text(
-//           _getData
-//       ),
-//       // body: Center(
-//       //   child: Padding(
-//       //     padding: EdgeInsets.all(30.0),
-//       //     child: Column(
-//       //       children: [
-//       //         Icon(
-//       //           Icons.thumb_up_alt_outlined,
-//       //           color: Colors.green,
-//       //           size: 300,
-//       //         ),
-//       //         Text(
-//       //           'Your Guess Is Right',
-//       //           style: TextStyle(fontSize: 20),
-//       //         )
-//       //       ],
-//       //     ),
-//       //   ),
-//       // ),
-//     );
-//   }
-// }
 
-class urlConstants {}
+class outofguess extends StatelessWidget {
+  const outofguess({super.key});
 
-class ApiService {
-  Future<model?> fetchdata() async {
-    print('called');
-    var url = Uri.parse(_homeguessState.baseurl + _homeguessState.getnum);
-    var response = await http.get(url);
-    print(response.body);
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      // model _model = welcomeFromJson(response.body);
-      // return _model;
-    }
-    // Future<List<model>?> fetchdata() async{
-    //   var url = Uri.parse(urlConstants.baseurl+urlConstants.getprodlist);
-    //   var response = await http.get(url);
-    //   if(response.statusCode == 200){
-    //     List<model> _list = welcomeFromJson(response.body) as List<model> ;
-    //     return _list;
-    //   }
-    //   return null;
-    // }
-    return null;
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(30.0),
+          child: Column(
+            children: [
+              Icon(
+                Icons.exit_to_app_outlined,
+                color: Colors.grey,
+                size: 300,
+              ),
+              Text(
+                'Out of guesses',
+                style: TextStyle(fontSize: 20),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
